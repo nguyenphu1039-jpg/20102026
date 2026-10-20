@@ -429,6 +429,140 @@ button{touch-action:manipulation;-webkit-appearance:none;appearance:none}
   #aurora i,.sring,.bigdate,#start h2{animation:none!important}
   .scene{transform:none}
 }
+
+/* ===================================================================
+   UPGRADE PATCH 3: Touch Burst, Sparkle Trail, Luxury Glass & 3D Tilt
+   =================================================================== */
+:root {
+  --card-rx: 0deg;
+  --card-ry: 0deg;
+  --glare-x: 50%;
+  --glare-y: 50%;
+}
+
+/* 1. Vòng gợn sóng ánh sáng mềm (Soft Ripple) & Hạt Hoa/Tim/Sao khi chạm */
+.up-ripple {
+  position: fixed;
+  pointer-events: none;
+  z-index: 62;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,217,138,.45) 0%, rgba(255,122,184,.25) 50%, transparent 72%);
+  border: 1.5px solid rgba(255,195,228,.85);
+  box-shadow: 0 0 18px rgba(255,122,184,.75), inset 0 0 10px rgba(255,217,138,.5);
+  animation: upRippleAnim .85s cubic-bezier(.16, 1, .3, 1) forwards;
+  will-change: transform, opacity;
+}
+@keyframes upRippleAnim {
+  0% { transform: scale(.35); opacity: .95; }
+  100% { transform: scale(5.8); opacity: 0; }
+}
+
+.up-burst-item {
+  position: fixed;
+  pointer-events: none;
+  z-index: 63;
+  line-height: 1;
+  user-select: none;
+  filter: drop-shadow(0 0 8px currentColor);
+  will-change: transform, opacity;
+}
+
+.up-star-trail {
+  position: fixed;
+  pointer-events: none;
+  z-index: 61;
+  line-height: 1;
+  user-select: none;
+  filter: drop-shadow(0 0 6px currentColor);
+  will-change: transform, opacity;
+}
+
+/* 2. Nâng cấp Thiệp cuối (Scene 11) thành Kính mờ Ánh kim & 3D Parallax Tilt */
+#sc-final {
+  perspective: 1100px;
+}
+
+.final {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 145, 198, 0.10) 45%, rgba(18, 6, 38, 0.72) 100%) !important;
+  backdrop-filter: blur(20px) saturate(165%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(165%) !important;
+  border: 1px solid rgba(255, 210, 230, 0.45) !important;
+  box-shadow:
+    0 24px 65px rgba(8, 2, 22, 0.75),
+    0 0 42px rgba(255, 122, 184, 0.35),
+    0 0 80px rgba(255, 217, 138, 0.15),
+    inset 0 1px 2px rgba(255, 255, 255, 0.45),
+    inset 0 0 32px rgba(255, 140, 200, 0.15) !important;
+  transform-style: preserve-3d;
+  transition: box-shadow 0.4s ease;
+}
+
+.scene.on .final {
+  animation: finalIn 1s cubic-bezier(.2,.9,.3,1.15) both !important;
+  transform: rotateX(var(--card-rx)) rotateY(var(--card-ry)) translateZ(0);
+}
+
+/* Viền ánh sáng chuyển sắc hồng-vàng kim lấp lánh chạy quanh viền (Animated Shimmer Border) */
+.final::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.8px;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 122, 184, 0.95) 0%,
+    rgba(255, 217, 138, 0.98) 25%,
+    rgba(169, 155, 255, 0.9) 50%,
+    rgba(255, 217, 138, 0.98) 75%,
+    rgba(255, 122, 184, 0.95) 100%
+  );
+  background-size: 300% 300%;
+  animation: upShimmerBorder 4.5s linear infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Ánh sáng phản chiếu mặt kính khi nghiêng 3D (Specular Glare) */
+.final::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(
+    circle at var(--glare-x) var(--glare-y),
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 217, 138, 0.08) 28%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+
+@keyframes upShimmerBorder {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 3. Canvas phụ cho mưa cánh hoa hồng & kim tuyến vàng hồng ở Cảnh 11 */
+#up-petal-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 56;
+}
+
 </style>
 </head>
 <body class="m-hero">
@@ -1156,6 +1290,321 @@ document.addEventListener('visibilitychange',()=>{ if(started&&!document.hidden&
 })();
 </script>
 
+
+
+<script>
+/* ===================================================================
+   UPGRADE PATCH 3:
+   - CUSTOM_WISH (Cá nhân hóa lời chúc)
+   - Chạm bung Hoa Đào, Sao ✦, Tim ♥ & Vòng gợn sóng mềm
+   - Vệt bụi sao lấp lánh (Sparkle Trail) theo ngón tay / chuột
+   - 3D Parallax Tilt cho Thiệp cuối (Scene 11)
+   - Pháo hoa cánh hoa hồng & kim tuyến vàng hồng từ 2 bên ở Scene 11
+   =================================================================== */
+
+/* 4. BIẾN CÁ NHÂN HÓA LỜI CHÚC (Dễ dàng chỉnh sửa tại đây) */
+const CUSTOM_WISH = {
+  recipient: "gửi người phụ nữ tuyệt vời",
+  message: "mong mỗi ngày của cậu đều có hoa, có nắng, có tiếng cười — và có người nhớ đến cậu thật nhiều."
+};
+
+(function(){
+  'use strict';
+  const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const pick = arr => arr[(Math.random() * arr.length) | 0];
+
+  /* --- Áp dụng CUSTOM_WISH cho Scene 11 --- */
+  const fTo = document.getElementById('f-to');
+  const fMsg = document.querySelector('#sc-final .f-msg');
+  const qp = new URLSearchParams(location.search);
+  const hasUrlTo = (qp.get('to') || '').trim().length > 0;
+  const hasUrlFrom = (qp.get('from') || '').trim().length > 0;
+
+  function applyCustomWish() {
+    if (fTo && !hasUrlTo && !hasUrlFrom && CUSTOM_WISH.recipient) {
+      fTo.textContent = CUSTOM_WISH.recipient;
+    }
+    if (fMsg && CUSTOM_WISH.message) {
+      fMsg.textContent = CUSTOM_WISH.message;
+    }
+  }
+  applyCustomWish();
+
+  const scFinal = document.getElementById('sc-final');
+  if (scFinal) {
+    new MutationObserver(() => {
+      if (scFinal.classList.contains('on')) applyCustomWish();
+    }).observe(scFinal, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  if (reduce) return;
+
+  /* --- 1. HIỆU ỨNG CHẠM BUNG HOA ĐÀO, NGÔI SAO ✦, TRÁI TIM ♥ & RIPPLE --- */
+  const PETAL_SVG = '<svg width="16" height="20" viewBox="0 0 20 26" style="display:block;overflow:visible"><path d="M10 25C2 17 -1 6 5 1C8 -1 10 2 10 4C10 2 12 -1 15 1C21 6 18 17 10 25Z" fill="currentColor" opacity="0.92"/></svg>';
+  const BURST_TYPES = ['petal', 'petal', 'petal', 'star', 'heart', 'star', 'heart'];
+  const BURST_COLORS = ['#ff85c0', '#ffb3d9', '#ffd98a', '#ff6fa5', '#c4b0ff', '#ffe5ec'];
+
+  function spawnTouchBurst(x, y) {
+    // Vòng gợn sóng ánh sáng mềm
+    const rip = document.createElement('div');
+    rip.className = 'up-ripple';
+    rip.style.left = x + 'px';
+    rip.style.top = y + 'px';
+    document.body.appendChild(rip);
+    setTimeout(() => rip.remove(), 900);
+
+    // 7 hạt gồm cánh hoa đào nhỏ, ngôi sao ✦ và trái tim ♥
+    const count = 7;
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('span');
+      el.className = 'up-burst-item';
+      const kind = BURST_TYPES[i % BURST_TYPES.length];
+      const color = pick(BURST_COLORS);
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.style.color = color;
+
+      if (kind === 'petal') {
+        el.innerHTML = PETAL_SVG;
+        el.style.transform = 'translate(-50%, -50%) scale(' + rnd(0.75, 1.25) + ')';
+      } else if (kind === 'star') {
+        el.textContent = '✦';
+        el.style.fontSize = rnd(13, 21) + 'px';
+      } else {
+        el.textContent = '♥';
+        el.style.fontSize = rnd(13, 20) + 'px';
+      }
+
+      document.body.appendChild(el);
+
+      const angle = (Math.PI * 2 * i) / count + rnd(-0.3, 0.3);
+      const dist = rnd(42, 96);
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist - rnd(12, 32);
+      const rot = rnd(-180, 180);
+
+      const anim = el.animate([
+        { transform: 'translate(-50%, -50%) scale(0.25) rotate(0deg)', opacity: 1 },
+        { transform: 'translate(calc(-50% + ' + (dx * 0.72) + 'px), calc(-50% + ' + (dy * 0.72) + 'px)) scale(1.1) rotate(' + (rot * 0.6) + 'deg)', opacity: 0.98, offset: 0.52 },
+        { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 38) + 'px)) scale(0.2) rotate(' + rot + 'deg)', opacity: 0 }
+      ], {
+        duration: rnd(780, 1180),
+        easing: 'cubic-bezier(0.22, 1, 0.36, 1)'
+      });
+      anim.onfinish = () => el.remove();
+    }
+  }
+
+  addEventListener('pointerdown', e => {
+    spawnTouchBurst(e.clientX, e.clientY);
+  }, { passive: true });
+
+  /* --- Vệt bụi sao lấp lánh (Sparkle Trail) mảnh nhẹ theo ngón tay / chuột --- */
+  let lastTrailTime = 0;
+  let lastTX = -999, lastTY = -999;
+  const TRAIL_CHARS = ['✦', '✧', '⋆', '·'];
+  const TRAIL_COLORS = ['#ffd98a', '#ff9ec7', '#ffffff', '#d8cbff'];
+
+  function spawnStarTrail(x, y) {
+    const now = performance.now();
+    const dist = Math.hypot(x - lastTX, y - lastTY);
+    if (now - lastTrailTime < 28 || dist < 10) return;
+    lastTrailTime = now;
+    lastTX = x;
+    lastTY = y;
+
+    const st = document.createElement('span');
+    st.className = 'up-star-trail';
+    st.textContent = pick(TRAIL_CHARS);
+    st.style.left = (x + rnd(-5, 5)) + 'px';
+    st.style.top = (y + rnd(-5, 5)) + 'px';
+    st.style.color = pick(TRAIL_COLORS);
+    st.style.fontSize = rnd(9, 15) + 'px';
+    document.body.appendChild(st);
+
+    const driftX = rnd(-16, 16);
+    const driftY = rnd(10, 28);
+    const rot = rnd(-120, 120);
+
+    const anim = st.animate([
+      { transform: 'translate(-50%, -50%) scale(1) rotate(0deg)', opacity: 0.92 },
+      { transform: 'translate(calc(-50% + ' + driftX + 'px), calc(-50% + ' + driftY + 'px)) scale(0.15) rotate(' + rot + 'deg)', opacity: 0 }
+    ], {
+      duration: rnd(520, 820),
+      easing: 'cubic-bezier(0.22, 1, 0.36, 1)'
+    });
+    anim.onfinish = () => st.remove();
+  }
+
+  /* --- 2. HIỆU ỨNG 3D PARALLAX TILT CHO THIỆP CUỐI (SCENE 11) --- */
+  const rootStyle = document.documentElement.style;
+  let targetRX = 0, targetRY = 0, curRX = 0, curRY = 0;
+  let glareX = 50, glareY = 50;
+
+  addEventListener('pointermove', e => {
+    spawnStarTrail(e.clientX, e.clientY);
+    const nx = (e.clientX / innerWidth) - 0.5;
+    const ny = (e.clientY / innerHeight) - 0.5;
+    targetRY = nx * 15;
+    targetRX = -ny * 12;
+    glareX = 50 + nx * 70;
+    glareY = 50 + ny * 70;
+  }, { passive: true });
+
+  addEventListener('deviceorientation', e => {
+    if (e.gamma == null) return;
+    const gx = Math.max(-25, Math.min(25, e.gamma)) / 25;
+    const by = Math.max(-25, Math.min(25, (e.beta || 45) - 45)) / 25;
+    targetRY = gx * 14;
+    targetRX = -by * 11;
+    glareX = 50 + gx * 45;
+    glareY = 50 + by * 45;
+  }, { passive: true });
+
+  /* --- 3. MƯA CÁNH HOA HỒNG & KIM TUYẾN VÀNG HỒNG TỪ HAI BÊN Ở SCENE 11 --- */
+  const pCanvas = document.createElement('canvas');
+  pCanvas.id = 'up-petal-canvas';
+  document.body.appendChild(pCanvas);
+  const pCtx = pCanvas.getContext('2d');
+  let pW = innerWidth, pH = innerHeight, pDPR = Math.min(devicePixelRatio || 1, 2);
+
+  function resizePetalCanvas() {
+    pDPR = Math.min(devicePixelRatio || 1, 2);
+    pW = innerWidth;
+    pH = innerHeight;
+    pCanvas.width = pW * pDPR;
+    pCanvas.height = pH * pDPR;
+    pCtx.setTransform(pDPR, 0, 0, pDPR, 0, 0);
+  }
+  resizePetalCanvas();
+  addEventListener('resize', resizePetalCanvas);
+
+  const sidePetals = [];
+
+  function fireSidePetalCannons() {
+    const palette = [
+      { c1: '#ff6fa5', c2: '#ffd6e7', type: 'rose' },
+      { c1: '#ff9ec7', c2: '#fff0f6', type: 'rose' },
+      { c1: '#ffd98a', c2: '#fff6d6', type: 'gold' },
+      { c1: '#ffb3c6', c2: '#ffe5ec', type: 'rose' },
+      { c1: '#f4a261', c2: '#ffecd1', type: 'gold' }
+    ];
+
+    // Bắn từ hai bên màn hình (Trái & Phải) hướng lên trung tâm rồi rơi nhẹ nhàng
+    [-1, 1].forEach(side => {
+      const originX = side === -1 ? -10 : pW + 10;
+      for (let i = 0; i < 48; i++) {
+        const col = pick(palette);
+        const speed = rnd(7, 17);
+        const angle = side === -1 ? rnd(-1.15, -0.32) : rnd(-Math.PI + 0.32, -Math.PI + 1.15);
+        sidePetals.push({
+          x: originX,
+          y: rnd(pH * 0.45, pH * 0.82),
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - rnd(1, 4),
+          size: col.type === 'rose' ? rnd(8, 15) : rnd(4, 8),
+          rot: rnd(0, Math.PI * 2),
+          vRot: rnd(-0.08, 0.08),
+          swayPh: rnd(0, Math.PI * 2),
+          swaySpd: rnd(0.03, 0.07),
+          c1: col.c1,
+          c2: col.c2,
+          type: col.type,
+          alpha: 1,
+          life: rnd(220, 380)
+        });
+      }
+    });
+  }
+
+  if (scFinal) {
+    let wasFinalOn = false;
+    new MutationObserver(() => {
+      const isOn = scFinal.classList.contains('on');
+      if (isOn && !wasFinalOn) {
+        wasFinalOn = true;
+        fireSidePetalCannons();
+        setTimeout(fireSidePetalCannons, 750);
+      } else if (!isOn) {
+        wasFinalOn = false;
+      }
+    }).observe(scFinal, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  let canvasCleared = true;
+  function updateUpgradeEffects() {
+    // Cập nhật 3D Tilt mượt cho Thiệp cuối
+    curRX += (targetRX - curRX) * 0.1;
+    curRY += (targetRY - curRY) * 0.1;
+    if (scFinal && scFinal.classList.contains('on')) {
+      rootStyle.setProperty('--card-rx', curRX.toFixed(2) + 'deg');
+      rootStyle.setProperty('--card-ry', curRY.toFixed(2) + 'deg');
+      rootStyle.setProperty('--glare-x', glareX.toFixed(1) + '%');
+      rootStyle.setProperty('--glare-y', glareY.toFixed(1) + '%');
+    }
+
+    // Vẽ pháo hoa cánh hoa hồng & kim tuyến vàng hồng
+    if (sidePetals.length > 0) {
+      canvasCleared = false;
+      pCtx.clearRect(0, 0, pW, pH);
+      for (let i = sidePetals.length - 1; i >= 0; i--) {
+        const p = sidePetals[i];
+        p.swayPh += p.swaySpd;
+        p.vx *= 0.982;
+        p.vy = Math.min(2.8, p.vy + 0.14);
+        p.x += p.vx + Math.sin(p.swayPh) * 1.1;
+        p.y += p.vy;
+        p.rot += p.vRot;
+        p.life--;
+
+        if (p.life <= 0 || p.y > pH + 30) {
+          sidePetals.splice(i, 1);
+          continue;
+        }
+
+        const alpha = Math.min(1, p.life / 45);
+        pCtx.save();
+        pCtx.globalAlpha = alpha;
+        pCtx.translate(p.x, p.y);
+        pCtx.rotate(p.rot);
+        pCtx.scale(Math.abs(Math.cos(p.swayPh)) * 0.65 + 0.35, 1);
+
+        if (p.type === 'rose') {
+          const grd = pCtx.createLinearGradient(0, -p.size, 0, p.size);
+          grd.addColorStop(0, p.c2);
+          grd.addColorStop(1, p.c1);
+          pCtx.fillStyle = grd;
+          pCtx.beginPath();
+          pCtx.moveTo(0, p.size);
+          pCtx.bezierCurveTo(-p.size * 0.95, p.size * 0.3, -p.size * 0.75, -p.size * 0.9, 0, -p.size * 0.55);
+          pCtx.bezierCurveTo(p.size * 0.75, -p.size * 0.9, p.size * 0.95, p.size * 0.3, 0, p.size);
+          pCtx.fill();
+        } else {
+          // Kim tuyến vàng hồng lấp lánh
+          pCtx.fillStyle = p.c1;
+          pCtx.shadowColor = p.c1;
+          pCtx.shadowBlur = 8;
+          pCtx.beginPath();
+          pCtx.moveTo(0, -p.size);
+          pCtx.lineTo(p.size * 0.6, 0);
+          pCtx.lineTo(0, p.size);
+          pCtx.lineTo(-p.size * 0.6, 0);
+          pCtx.closePath();
+          pCtx.fill();
+        }
+        pCtx.restore();
+      }
+    } else if (!canvasCleared) {
+      pCtx.clearRect(0, 0, pW, pH);
+      canvasCleared = true;
+    }
+
+    requestAnimationFrame(updateUpgradeEffects);
+  }
+  requestAnimationFrame(updateUpgradeEffects);
+})();
+</script>
 
 </body>
 </html>
